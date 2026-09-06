@@ -5,6 +5,7 @@ import { Input, Field } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Banner } from '../components/ui/Feedback';
 import { ApiError } from '../lib/api';
+import { markOnboardingPending } from '../components/OnboardingSheet';
 
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const { login, register, loading } = useAuth();
@@ -43,6 +44,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
     try {
       if (isRegister) {
         await register(username, email, password, displayName || undefined);
+        markOnboardingPending();
       } else {
         await login(email, password);
       }

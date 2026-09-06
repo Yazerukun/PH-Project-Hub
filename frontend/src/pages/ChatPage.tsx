@@ -195,7 +195,15 @@ export function ChatPage() {
 
       {/* Composer */}
       <div className="border-t border-ink-600 bg-ink-900/60 p-3">
-        {replyTo && (
+        {channel.is_locked === 1 && !canModerate ? (
+          <div className="flex items-center gap-2 rounded-lg border border-ink-500 bg-ink-800/60 px-3 py-2.5 text-sm text-gray-400">
+            <LockIcon size={14} className="shrink-0 text-gray-500" />
+            <span>
+              <span className="font-medium text-gray-300">#{channel.name}</span> is read-only. Only moderators and
+              admins can post here.
+            </span>
+          </div>
+        ) : replyTo && (
           <div className="mb-2 flex items-center justify-between rounded-lg border border-primary-600/30 bg-primary-600/5 px-3 py-1.5">
             <span className="min-w-0 flex-1 truncate text-xs text-gray-400">
               <span className="font-medium text-primary-300">Replying to {replyTo.display_name}:</span> {replyTo.body}

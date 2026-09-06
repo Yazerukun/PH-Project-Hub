@@ -9,6 +9,7 @@ import { ErrorState } from '../components/ui/Feedback';
 import { UpdateCard } from '../components/UpdateCard';
 import { parseTechStack, timeAgo } from '../lib/format';
 import { updateTypeLabel } from '../lib/updates';
+import { applyPageMeta, resetPageMeta } from '../lib/seo';
 import {
   GithubIcon, LinkIcon, UsersIcon, ArrowUpIcon, BookmarkIcon, ChatIcon, BugIcon, IdeaIcon,
 } from '../components/ui/icons';
@@ -66,6 +67,18 @@ export function ProjectDetailPage({ initialTab = 'overview' }: ProjectPageProps)
       active = false;
     };
   }, [slug]);
+
+  useEffect(() => {
+    if (project) {
+      applyPageMeta(
+        `${project.name} — ${project.status} | PH Project Hub`,
+        `${project.description}${project.version ? ` Current version: v${project.version}.` : ''}`
+      );
+    }
+    return () => {
+      resetPageMeta();
+    };
+  }, [project]);
 
   useEffect(() => {
     if (!user || !slug) return;

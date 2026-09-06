@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ph-project-hub.pages.dev/sitemap.xml

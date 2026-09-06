@@ -1,6 +1,6 @@
 import { Env } from '../types';
 import { json, unauthorized, badRequest, conflict, ok, error, forbidden, serverError } from '../utils/http';
-import { hashPassword, verifyPassword, randomToken } from '../utils/crypto';
+import { hashPassword, verifyPassword, randomToken, isLegacyHash } from '../utils/crypto';
 import { createSessionToken } from '../auth/session';
 import { validateRequiredFields, isEmail, validPassword, USERNAME_RE, DISPLAY_NAME_RE, validateUrl, FieldError } from '../validation';
 import { requireAuth } from '../auth/session';
@@ -130,6 +130,14 @@ export async function login(request: Request, env: Env): Promise<Response> {
   const valid = await verifyPassword(password, hash, salt);
   if (!valid) {
     return unauthorized('Invalid email or password');
+  }
+
+  // Transparent upgrade: rehash accounts still stored with the pre-launch
+  // salted SHA-256 scheme the first time they log in.
+  if (isLegacyHash(hash)) {
+    const { hash: newHash, salt: newSalt } = await hashPassword(password);
+    await env.DB.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+      .bind(`${newSalt}:${newHash}`, user.id).run();
   }
 
   if (user.is_banned === 1) {

@@ -81,6 +81,14 @@ export class ChatRoom {
       return new Response('ChatRoom: invalid session', { status: 401 });
     }
 
+    // Revoked sessions (logout) must not open sockets: the session must still
+    // exist and be unexpired, mirroring REST auth.
+    const session = await this.env.DB.prepare('SELECT id FROM sessions WHERE token = ? AND expires_at > ?')
+      .bind(token, this.now()).first();
+    if (!session) {
+      return new Response('ChatRoom: session revoked', { status: 401 });
+    }
+
     const userRow = await this.env.DB.prepare('SELECT id, username, display_name, avatar, role FROM users WHERE id = ?')
       .bind(userId).first<{ id: number; username: string; display_name: string; avatar: string | null; role: AuthUser['role'] }>();
     if (!userRow || userRow.role === undefined) {

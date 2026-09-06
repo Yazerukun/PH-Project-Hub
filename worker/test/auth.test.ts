@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { register, login, me, logout, updateProfile } from '../src/routes/auth';
 import { createSessionToken } from '../src/auth/session';
 import { FakeD1, makeEnv, authedRequest, jsonBody } from './helpers';
+import { toHex } from './crypto-harness';
 
 function regBody(overrides: Record<string, unknown> = {}) {
   return { username: 'newfibb', email: 'fib@example.ph', password: 'supersecret99', ...overrides };
@@ -123,6 +124,26 @@ describe('login', () => {
     const res = await login(authedRequest('/api/login', { method: 'POST', body: { email: 'fib@example.ph', password: 'supersecret99' } }), env);
     expect(res.status).toBe(403);
     expect(String((await jsonBody(res)).error)).toContain('banned');
+  });
+
+  it('upgrades a legacy salted SHA-256 hash to PBKDF2 on successful login', async () => {
+    const db = new FakeD1();
+    const env = makeEnv({ db });
+    await register(authedRequest('/api/register', { method: 'POST', body: regBody() }), env);
+    const created = db.users.find((u) => u.username === 'newfibb') as { id: number };
+    const legacySalt = 'deadbeef000011112222333344445555';
+    const legacyHash = toHex(
+      await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${legacySalt}:supersecret99`))
+    );
+    db.passwordHashes.set(created.id, `${legacySalt}:${legacyHash}`);
+
+    const res = await login(authedRequest('/api/login', { method: 'POST', body: { email: 'fib@example.ph', password: 'supersecret99' } }), env);
+    expect(res.status).toBe(200);
+
+    const stored = db.passwordHashes.get(created.id) as string;
+    expect(stored).not.toContain(legacySalt);
+    expect(stored.split(':')[1]).toMatch(/^pbkdf2-sha256\$210000\$[0-9a-f]{64}$/);
+    expect(stored.split(':')[0]).toMatch(/^[0-9a-f]{32}$/);
   });
 });
 

@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar';
 import { useChannels } from '../../stores/channels';
 import { useAuth } from '../../stores/auth';
 import { useSitePresence } from '../../hooks/useSitePresence';
+import { OnboardingSheet } from '../OnboardingSheet';
 import { ChatIcon, HomeIcon, UpdatesIcon, ExploreIcon, UserIcon, CloseIcon, HashIcon } from '../ui/icons';
 
 export function AppLayout({ contextPanel }: { contextPanel?: ReactNode }) {
@@ -79,6 +80,8 @@ export function AppLayout({ contextPanel }: { contextPanel?: ReactNode }) {
       {/* Mobile channel drawer bottom sheet */}
       {drawerOpen === false && null}
       <MobileChannelDrawer />
+
+      <OnboardingSheet />
     </div>
   );
 }

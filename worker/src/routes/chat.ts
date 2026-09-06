@@ -71,6 +71,13 @@ export async function sendMessageRest(request: Request, env: Env, channelId: num
   const text = safeMessage(body.body);
   if (!text) return badRequest('Message body is required (1-2000 chars)');
 
+  const now = Math.floor(Date.now() / 1000);
+  const muted = await env.DB.prepare('SELECT is_muted, muted_until FROM users WHERE id = ?')
+    .bind(auth.user.id).first<{ is_muted: number; muted_until: number | null }>();
+  if (muted?.is_muted === 1 && (!muted.muted_until || muted.muted_until > now)) {
+    return forbidden('You are muted and cannot send messages');
+  }
+
   const { meta } = await env.DB.prepare('INSERT INTO messages (channel_id, user_id, body) VALUES (?, ?, ?)')
     .bind(channelId, auth.user.id, text).run();
 

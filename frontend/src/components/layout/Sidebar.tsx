@@ -154,6 +154,12 @@ export function Sidebar({ className = '' }: { className?: string }) {
         <p className="mt-2.5 text-[11px] leading-snug text-gray-500">
           Community of builders from the Philippines 🇵🇭
         </p>
+        <Link
+          to="/guidelines"
+          className="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-ink-500 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 hover:bg-ink-600"
+        >
+          Community guidelines
+        </Link>
         {user && user.role === 'ADMIN' || user?.role === 'OWNER' ? (
           <Link
             to="/admin"

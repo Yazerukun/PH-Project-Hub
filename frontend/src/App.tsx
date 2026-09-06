@@ -4,12 +4,14 @@ import { ChannelsProvider } from './stores/channels';
 import { useAuth } from './stores/auth';
 import { AppLayout } from './components/layout/AppLayout';
 import { HomePage } from './pages/HomePage';
+import { resetPageMeta } from './lib/seo';
 import { UpdatesPage } from './pages/UpdatesPage';
 import { UpdateDetailPage } from './pages/UpdateDetailPage';
 import { ExplorePage } from './pages/ExplorePage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
 import { ChatPage } from './pages/ChatPage';
 import { RoadmapPage } from './pages/RoadmapPage';
+import { GuidelinesPage } from './pages/GuidelinesPage';
 import { SearchPage } from './pages/SearchPage';
 import { BugReportsPage } from './pages/BugReportsPage';
 import { SuggestionsPage } from './pages/SuggestionsPage';
@@ -28,6 +30,19 @@ function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
+const DYNAMIC_ROUTE = /^\/projects\/.+$/;
+
+function PageMetaResetter() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    // Dynamic routes (e.g. project pages) set their own meta; reset for everything else.
+    if (!DYNAMIC_ROUTE.test(pathname)) {
+      resetPageMeta();
+    }
   }, [pathname]);
   return null;
 }
@@ -63,6 +78,7 @@ function Bootstrapper() {
           <Route path="/projects/:slug/discussion" element={<ProjectDetailPage initialTab="discussion" />} />
           <Route path="/chat/:channel" element={<ChatPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/guidelines" element={<GuidelinesPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/bugs" element={<BugReportsPage />} />
           <Route path="/bugs/new" element={<ProtectedRoute><NewBugPage /></ProtectedRoute>} />
@@ -85,6 +101,7 @@ export function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <PageMetaResetter />
       <Bootstrapper />
     </BrowserRouter>
   );
