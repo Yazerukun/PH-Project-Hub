@@ -2,7 +2,7 @@
 
 INSERT OR IGNORE INTO projects (slug, name, description, category, status, version, tech_stack, github_url, live_url) VALUES
 ('yomikaze', 'Yomikaze', 'A modern manga reader for the Filipino community. Fast, beautiful, and free.', 'READER', 'LIVE', '2.4.0', '["React","TypeScript","Vite","Cloudflare"]', NULL, 'https://yomikaze.vercel.app/'),
-('pinoytools', 'PinoyTools', 'A collection of everyday web tools built for Filipino users.', 'TOOLS', 'LIVE', '1.1.0', '["React","TypeScript","Tailwind","Cloudflare"]', NULL, NULL),
+('pinoytools', 'PinoyTools', 'A collection of everyday web tools built for Filipino users. In development — not live yet.', 'TOOLS', 'IN DEVELOPMENT', '1.1.0', '["React","TypeScript","Tailwind","Cloudflare"]', NULL, NULL),
 ('pinoysofthub', 'PinoySoftHub', 'Free and safe software application downloads for Windows, curated for the Philippines.', 'DOWNLOADS', 'LIVE', '0.9.0', '["React","TypeScript","Cloudflare","D1"]', NULL, 'https://pinoysofthub.pages.dev'),
 ('pcvault', 'PCVault', 'Your personal PC game and software vault. Curated and verified.', 'GAMES', 'LIVE', '0.5.0', '["Python","React","TypeScript","Cloudflare"]', NULL, 'https://pcvault.pages.dev'),
 ('ai-and-tools', 'AI & Tools', 'AI resources, prompts, and developer tools hub.', 'AI', 'IN DEVELOPMENT', '1.0.0', '["React","TypeScript","OpenAI","Cloudflare"]', NULL, NULL),
