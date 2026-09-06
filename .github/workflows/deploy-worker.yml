@@ -10,15 +10,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: worker
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: package-lock.json
       - run: npm ci
 
       - name: Require privileged-email vars
@@ -34,4 +32,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npm run deploy -- --var OWNER_EMAILS:"${{ secrets.OWNER_EMAILS }}" --var ADMIN_EMAILS:"${{ secrets.ADMIN_EMAILS }}"
+          cd worker && npm run deploy -- --var OWNER_EMAILS:"${{ secrets.OWNER_EMAILS }}" --var ADMIN_EMAILS:"${{ secrets.ADMIN_EMAILS }}"
