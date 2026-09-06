@@ -120,17 +120,26 @@ npm run migrate:local
 
 The production architecture is **Pages (`ph-project-hub`, frontend) + Worker (`ph-project-hub-api`) + D1 (`ph-project-hub-db`) + Durable Objects (`CHAT_ROOM`, `PRESENCE`)**. The existing production deployment is preserved.
 
-### Cloudflare Pages (frontend, via GitHub)
+### Cloudflare Pages (frontend)
 
-This repository is connected to the existing `ph-project-hub` Pages project as the Git source:
+`ph-project-hub` is currently deployed via **direct upload** (production deployment `78bb9512`), which the Cloudflare API does not allow switching to a GitHub source ([error 8000069](../../.github/workflows)). Automatic Git deploys require one manual, dashboard-only step:
 
-- **Production branch:** `main`
+1. Cloudflare dashboard → **Workers & Pages → ph-project-hub → Settings → Connect to Git** (install the Cloudflare GitHub App on `Yazerukun` if prompted).
+2. Repository `Yazerukun/PH-Project-Hub`, production branch `main`.
+
+For the git-backed build, Cloudflare applies this configuration (it does not exist in code because the project predates Git):
+
 - **Framework:** Vite
 - **Build command:** `cd frontend && npm install && npm run build`
 - **Output directory:** `frontend/dist`
 - **Environment variable:** `VITE_API_BASE=https://ph-project-hub-api.yomikaze-md.workers.dev`
 
-Every push to `main` triggers an automatic Pages build and deployment.
+Until connected, deploy the frontend the current way:
+
+```bash
+cd frontend && npm run build
+npx wrangler pages deploy dist --project-name ph-project-hub
+```
 
 ### Cloudflare Worker (backend)
 
