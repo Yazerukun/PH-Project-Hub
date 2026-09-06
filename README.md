@@ -2,6 +2,8 @@
 
 Build · Update · Discuss · Grow
 
+[![Deploy Production](https://github.com/Yazerukun/PH-Project-Hub/actions/workflows/deploy.yml/badge.svg)](https://github.com/Yazerukun/PH-Project-Hub/actions/workflows/deploy.yml)
+
 **Live site:** https://ph-project-hub.pages.dev/
 **API:** https://ph-project-hub-api.yomikaze-md.workers.dev
 
@@ -118,30 +120,40 @@ npm run migrate:local
 
 ## Cloudflare deployment
 
-The production architecture is **Pages (`ph-project-hub`, frontend) + Worker (`ph-project-hub-api`) + D1 (`ph-project-hub-db`) + Durable Objects (`CHAT_ROOM`, `PRESENCE`)**. The existing production deployment is preserved.
+The production architecture is **Pages (`ph-project-hub`, frontend) + Worker (`ph-project-hub-api`) + D1 (`ph-project-hub-db`) + Durable Objects (`CHAT_ROOM`, `PRESENCE`)**. Deployment is fully automatic through GitHub Actions; the existing production resources are preserved.
+
+### Pipeline
+
+```
+git push main
+   → GitHub Actions (.github/workflows/deploy.yml)
+   → npm ci · typecheck · lint · 64 tests · production build
+   → verify build output (no localhost / localhost-refs / leaked secrets in dist)
+   → deploy Worker (ph-project-hub-api) with OWNER_EMAILS / ADMIN_EMAILS from repo secrets
+   → deploy frontend (frontend/dist) to the EXISTING Pages project ph-project-hub via wrangler
+   → production smoke test (pages.dev, API, SPA routes, JS/CSS assets)
+```
+
+Any critical validation failure stops the job before either deployment runs, and the run goes visibly red. Runs are serialized with `concurrency: ph-project-hub-production` so two `main` pushes never deploy at the same time.
 
 ### Cloudflare Pages (frontend)
 
-`ph-project-hub` is currently deployed via **direct upload** (production deployment `78bb9512`), which the Cloudflare API does not allow switching to a GitHub source ([error 8000069](../../.github/workflows)). Automatic Git deploys require one manual, dashboard-only step:
-
-1. Cloudflare dashboard → **Workers & Pages → ph-project-hub → Settings → Connect to Git** (install the Cloudflare GitHub App on `Yazerukun` if prompted).
-2. Repository `Yazerukun/PH-Project-Hub`, production branch `main`.
-
-For the git-backed build, Cloudflare applies this configuration (it does not exist in code because the project predates Git):
-
-- **Framework:** Vite
-- **Build command:** `cd frontend && npm install && npm run build`
-- **Output directory:** `frontend/dist`
-- **Environment variable:** `VITE_API_BASE=https://ph-project-hub-api.yomikaze-md.workers.dev`
-
-Until connected, deploy the frontend the current way:
+`ph-project-hub` is a **Direct Upload** Pages project. Direct Upload projects cannot be converted to native Cloudflare Git integration, so GitHub Actions **is** the CI/CD: it builds `frontend/dist` in CI and uploads it to the existing project with `wrangler pages deploy`. The Pages project intentionally stays Direct Upload while GitHub Actions provides automatic deployment.
 
 ```bash
-cd frontend && npm run build
-npx wrangler pages deploy dist --project-name ph-project-hub
+cd worker   # wrangler is a devDependency of the worker workspace
+npx wrangler pages deploy ../frontend/dist --project-name ph-project-hub --branch main
 ```
 
+Production configuration is set at build time from workflow environment:
+
+- **Build command:** `npm run build` (frontend workspace)
+- **Output directory:** `frontend/dist`
+- **Environment variable:** `VITE_API_BASE=https://ph-project-hub-api.yomikaze-md.workers.dev` (declared in `.github/workflows/deploy.yml` and `frontend/.env.production`; the Worker URL is public configuration, not a secret)
+
 ### Cloudflare Worker (backend)
+
+Deployed by the same workflow from the worker workspace. The deploy step requires the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repo secrets, and a guard step refuses to run unless the `OWNER_EMAILS` and `ADMIN_EMAILS` repository secrets are set, so privileged emails stay out of Git history.
 
 ```bash
 cd worker
@@ -150,9 +162,11 @@ npm run deploy -- \
   --var ADMIN_EMAILS:'<comma-separated admin emails>'
 ```
 
-A GitHub Actions workflow ([`.github/workflows/deploy-worker.yml`](.github/workflows/deploy-worker.yml)) also deploys the Worker on demand — it refuses to run unless the `OWNER_EMAILS` and `ADMIN_EMAILS` repository secrets are set, so privileged emails stay out of Git history.
-
 **D1:** `worker/wrangler.jsonc` holds the `database_id`; apply migrations with `npm run migrate:remote`.
+
+### Previous deployments & rollback
+
+Every `wrangler pages deploy` upload creates a new Cloudflare deployment; prior deployments are kept by the platform and are inspectable in the dashboard under **Workers & Pages → ph-project-hub → Deployments** (or via the Cloudflare API `pages/projects/ph-project-hub/deployments`). Old deployments are never deleted automatically. Smoke-test failures fail the GitHub Actions run even if the upload itself exited 0 — the live site is the source of truth, not the deploy step's exit code.
 
 ## Security notes
 

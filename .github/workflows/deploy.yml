@@ -1,0 +1,131 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ph-project-hub-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  VITE_API_BASE: https://ph-project-hub-api.yomikaze-md.workers.dev
+  PAGES_PROJECT: ph-project-hub
+  WORKER_NAME: ph-project-hub-api
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify frontend build output
+        run: |
+          test -d frontend/dist
+          test -f frontend/dist/index.html
+          echo "dist has $(find frontend/dist -type f | wc -l) files"
+
+      - name: No localhost check
+        run: |
+          if rg -n "localhost|127\.0\.0\.1|:5173|:8787" frontend/dist; then
+            echo "::error::Production bundle contains localhost/development references"
+            exit 1
+          fi
+          rg -l "ph-project-hub-api\.yomikaze-md\.workers\.dev" frontend/dist --glob '*.js' >/dev/null
+          echo "Production API domain present in built bundle"
+
+      - name: Secret leak check
+        run: |
+          if rg -n "AUTH_SECRET|CLOUDFLARE_API_TOKEN|skorts" frontend/dist; then
+            echo "::error::Sensitive value found in built bundle"
+            exit 1
+          fi
+          echo "No sensitive values in built bundle"
+
+      - name: Require privileged-email vars
+        shell: bash
+        run: |
+          if [[ -z "${{ secrets.OWNER_EMAILS }}" || -z "${{ secrets.ADMIN_EMAILS }}" ]]; then
+            echo "::error::OWNER_EMAILS and ADMIN_EMAILS repository secrets must be set to the real values before deploying."
+            exit 1
+          fi
+
+      - name: Deploy Worker
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npm run deploy -- --var OWNER_EMAILS:"${{ secrets.OWNER_EMAILS }}" --var ADMIN_EMAILS:"${{ secrets.ADMIN_EMAILS }}" | tee /tmp/worker-deploy.log
+          rg "https://$WORKER_NAME" /tmp/worker-deploy.log || true
+
+      - name: Deploy Pages
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --no-install wrangler pages deploy ../frontend/dist \
+            --project-name=$PAGES_PROJECT \
+            --branch=main | tee /tmp/pages-deploy.log
+
+      - name: Production smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          HOME_URL="https://$PAGES_PROJECT.pages.dev"
+          API_URL="https://$WORKER_NAME.yomikaze-md.workers.dev"
+
+          check() {
+            local label="$1" url="$2" ua="${3:-}"
+            for i in $(seq 1 15); do
+              if [ -n "$ua" ]; then
+                code="$(curl -s -A "$ua" -o /dev/null -w '%{http_code}' --max-time 20 "$url" || true)"
+              else
+                code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$url" || true)"
+              fi
+              if [ "$code" = "200" ]; then echo "✓ $label -> 200"; return 0; fi
+              sleep 2
+            done
+            echo "::error::$label -> HTTP ${code:-timeout} (expected 200) after retries"
+            return 1
+          }
+
+          check "Homepage" "$HOME_URL/"
+          check "Projects page" "$HOME_URL/projects"
+          check "Updates page" "$HOME_URL/updates"
+          check "Login page" "$HOME_URL/login"
+          check "Register page" "$HOME_URL/register"
+          check "API projects" "$API_URL/api/projects" "Mozilla/5.0"
+
+          html="$(curl -s -A "Mozilla/5.0" --max-time 20 "$HOME_URL/")"
+          for asset in $(printf '%s\n' "$html" | rg -o 'src="/assets/[^"]+\.(js)"|href="/assets/[^"]+\.(css)"' | rg -o '/assets/[^"]+' | sort -u); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HOME_URL$asset")"
+            [ "$code" = "200" ] || { echo "::error::asset $asset -> $code"; exit 1; }
+            echo "✓ asset $asset -> 200"
+          done
+          echo "SMOKE_OK"
