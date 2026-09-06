@@ -82,7 +82,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           npm run deploy -- --var OWNER_EMAILS:"${{ secrets.OWNER_EMAILS }}" --var ADMIN_EMAILS:"${{ secrets.ADMIN_EMAILS }}" | tee /tmp/worker-deploy.log
-          rg "https://$WORKER_NAME" /tmp/worker-deploy.log || true
+          grep "https://$WORKER_NAME" /tmp/worker-deploy.log || true
 
       - name: Deploy Pages
         working-directory: worker
@@ -123,7 +123,7 @@ jobs:
           check "API projects" "$API_URL/api/projects" "Mozilla/5.0"
 
           html="$(curl -s -A "Mozilla/5.0" --max-time 20 "$HOME_URL/")"
-          for asset in $(printf '%s\n' "$html" | rg -o 'src="/assets/[^"]+\.(js)"|href="/assets/[^"]+\.(css)"' | rg -o '/assets/[^"]+' | sort -u); do
+          for asset in $(printf '%s\n' "$html" | grep -oE 'src="/assets/[^"]+\.js"|href="/assets/[^"]+\.css"' | grep -oE '/assets/[^"]+' | sort -u); do
             code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$HOME_URL$asset")"
             [ "$code" = "200" ] || { echo "::error::asset $asset -> $code"; exit 1; }
             echo "✓ asset $asset -> 200"
