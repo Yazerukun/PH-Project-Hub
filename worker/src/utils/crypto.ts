@@ -1,5 +1,7 @@
 const PBKDF2_MARKER = 'pbkdf2-sha256';
-const PBKDF2_ITERATIONS = 210000;
+// Cloudflare Workers' WebCrypto rejects PBKDF2 iteration counts above 100000,
+// so this is the practical platform ceiling for password hashing here.
+const PBKDF2_ITERATIONS = 100000;
 const SALT_BYTES = 16;
 const KEY_BITS = 256;
 

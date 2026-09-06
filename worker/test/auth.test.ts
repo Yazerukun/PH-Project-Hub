@@ -142,7 +142,7 @@ describe('login', () => {
 
     const stored = db.passwordHashes.get(created.id) as string;
     expect(stored).not.toContain(legacySalt);
-    expect(stored.split(':')[1]).toMatch(/^pbkdf2-sha256\$210000\$[0-9a-f]{64}$/);
+    expect(stored.split(':')[1]).toMatch(/^pbkdf2-sha256\$100000\$[0-9a-f]{64}$/);
     expect(stored.split(':')[0]).toMatch(/^[0-9a-f]{32}$/);
   });
 });

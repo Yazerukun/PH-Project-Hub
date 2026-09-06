@@ -9,8 +9,8 @@ const HEX32 = /^[0-9a-f]{32}$/;
 describe('password hashing', () => {
   it('produces a salted PBKDF2-SHA256 hash and verifies it', async () => {
     const { hash, salt } = await hashPassword('correct horse battery staple');
-    expect(hash).toMatch(/^pbkdf2-sha256\$210000\$/);
-    expect(hash.slice('pbkdf2-sha256$210000$'.length)).toMatch(HEX64);
+    expect(hash).toMatch(/^pbkdf2-sha256\$100000\$/);
+    expect(hash.slice('pbkdf2-sha256$100000$'.length)).toMatch(HEX64);
     expect(salt).toMatch(HEX32);
     expect(isLegacyHash(hash)).toBe(false);
     expect(await verifyPassword('correct horse battery staple', hash, salt)).toBe(true);
@@ -28,7 +28,7 @@ describe('password hashing', () => {
   it('recomputes the correct digest for a fixed salt', async () => {
     const { hash, salt } = await hashPassword('pw', 'aaaabbbbccccddddeeeeffff00001111');
     expect(salt).toBe('aaaabbbbccccddddeeeeffff00001111');
-    expect(hash).toMatch(/^pbkdf2-sha256\$210000\$[0-9a-f]{64}$/);
+    expect(hash).toMatch(/^pbkdf2-sha256\$100000\$[0-9a-f]{64}$/);
     expect(await verifyPassword('pw', hash, salt)).toBe(true);
   });
 
