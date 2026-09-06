@@ -1,0 +1,21 @@
+{
+  "name": "ph-project-hub",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PH PROJECT HUB — Build · Update · Discuss · Grow",
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "dev:worker": "npm run dev --workspace=worker",
+    "build": "npm run build --workspace=frontend",
+    "typecheck": "npm run typecheck --workspace=frontend && npm run typecheck --workspace=worker",
+    "lint": "npm run lint --workspace=frontend",
+    "test": "npm test --workspace=worker",
+    "migrate:local": "npm run db:migrate:local --workspace=worker",
+    "migrate:remote": "npm run db:migrate:remote --workspace=worker",
+    "deploy": "npm run deploy --workspace=worker"
+  },
+  "workspaces": [
+    "frontend",
+    "worker"
+  ]
+}

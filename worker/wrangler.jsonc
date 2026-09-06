@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ph-project-hub-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  // Privileged owner/admin emails are supplied at deploy time via CI secrets
+  // or `wrangler deploy --var OWNER_EMAILS=... --var ADMIN_EMAILS=...`.
+  // Never commit real email values here.
+  "vars": {
+    "OWNER_EMAILS": "",
+    "ADMIN_EMAILS": ""
+  },
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ph-project-hub-db",
+      "database_id": "1a91bdd5-3d68-435a-89c3-c9a8f6fc9288",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHAT_ROOM", "class_name": "ChatRoom" },
+      { "name": "PRESENCE", "class_name": "PresenceRoom" }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ChatRoom", "PresenceRoom"]
+    }
+  ]
+}
