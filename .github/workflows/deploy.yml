@@ -53,8 +53,15 @@ jobs:
 
       - name: No localhost check
         run: |
-          if grep -rEn "localhost|127\.0\.0\.1|:5173|:8787" frontend/dist; then
+          if grep -rEn "127\.0\.0\.1|:5173|:8787" frontend/dist; then
             echo "::error::Production bundle contains localhost/development references"
+            exit 1
+          fi
+          # The only "localhost" strings allowed are React Router's internal
+          # URL-fallback constants (`new URL("http://localhost")` / `let r="http://localhost"`),
+          # used only when window.location is unavailable. Anything else is a real reference.
+          if grep -rn "http://localhost" frontend/dist | grep -v 'new URL(`http://localhost`)' | grep -v 'let r=`http://localhost`'; then
+            echo "::error::Production bundle contains a non-library localhost reference"
             exit 1
           fi
           grep -rl "ph-project-hub-api\.yomikaze-md\.workers\.dev" frontend/dist --include='*.js' >/dev/null
