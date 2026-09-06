@@ -53,16 +53,16 @@ jobs:
 
       - name: No localhost check
         run: |
-          if rg -n "localhost|127\.0\.0\.1|:5173|:8787" frontend/dist; then
+          if grep -rEn "localhost|127\.0\.0\.1|:5173|:8787" frontend/dist; then
             echo "::error::Production bundle contains localhost/development references"
             exit 1
           fi
-          rg -l "ph-project-hub-api\.yomikaze-md\.workers\.dev" frontend/dist --glob '*.js' >/dev/null
+          grep -rl "ph-project-hub-api\.yomikaze-md\.workers\.dev" frontend/dist --include='*.js' >/dev/null
           echo "Production API domain present in built bundle"
 
       - name: Secret leak check
         run: |
-          if rg -n "AUTH_SECRET|CLOUDFLARE_API_TOKEN|skorts" frontend/dist; then
+          if grep -rEn "AUTH_SECRET|CLOUDFLARE_API_TOKEN|skorts" frontend/dist; then
             echo "::error::Sensitive value found in built bundle"
             exit 1
           fi
