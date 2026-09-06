@@ -7,6 +7,8 @@ Build · Update · Discuss · Grow
 **Live site:** https://ph-project-hub.pages.dev/
 **API:** https://ph-project-hub-api.yomikaze-md.workers.dev
 
+**Status:** automatically validated, built, and deployed to production on every push to `main` by GitHub Actions (badge above tracks the latest run).
+
 PH PROJECT HUB is the official community home for the Philippine open-source project lineup. It publishes official build updates and project status, rolls out program announcements and priorities, and runs a real-time, moderated community chat organized around project channels.
 
 ## Overview
