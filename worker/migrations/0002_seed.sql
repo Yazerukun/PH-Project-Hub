@@ -6,7 +6,7 @@ INSERT OR IGNORE INTO projects (slug, name, description, category, status, versi
 ('pinoysofthub', 'PinoySoftHub', 'Free and safe software application downloads for Windows, curated for the Philippines.', 'DOWNLOADS', 'LIVE', '0.9.0', '["React","TypeScript","Cloudflare","D1"]', NULL, 'https://pinoysofthub.pages.dev'),
 ('pcvault', 'PCVault', 'Your personal PC game and software vault. Curated and verified.', 'GAMES', 'LIVE', '0.5.0', '["Python","React","TypeScript","Cloudflare"]', NULL, 'https://pcvault.pages.dev'),
 ('ai-and-tools', 'AI & Tools', 'AI resources, prompts, and developer tools hub.', 'AI', 'IN DEVELOPMENT', '1.0.0', '["React","TypeScript","OpenAI","Cloudflare"]', NULL, NULL),
-('tinda-pos', 'TINDA POS', 'A point-of-sale app for sari-sari stores and small businesses. Track sales, manage inventory, and keep all records local with SQLite.', 'POS', 'LIVE', 'v1.0.2-hotfix.1', '["Python","SQLite"]', 'https://github.com/Yazerukun/TINDA-POS', NULL);
+('tinda-pos', 'TINDA POS', 'A point-of-sale app for sari-sari stores and small businesses. Track sales, manage inventory, and keep all records local with SQLite.', 'POS', 'LIVE', 'v1.0.3', '["Python","SQLite"]', 'https://github.com/Yazerukun/TINDA-POS', NULL);
 
 INSERT OR IGNORE INTO channels (slug, name, description, type, project_id, position) VALUES
 ('general', 'General', 'Welcome and general discussion', 'COMMUNITY', NULL, 1),

@@ -67,7 +67,11 @@ export function AppLayout({ contextPanel }: { contextPanel?: ReactNode }) {
           onClick={() => setDrawerOpen(false)}
           aria-hidden={!drawerOpen}
         >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className={`absolute inset-0 transition-opacity duration-200 ease-out ${
+              drawerOpen ? 'bg-black/60 opacity-100 backdrop-blur-sm' : 'opacity-0'
+            }`}
+          />
           <div
             className={`fixed inset-y-0 left-0 z-30 flex h-full w-[90vw] max-w-sm flex-col transition-transform duration-200 ease-out ${
               drawerOpen ? 'translate-x-0' : '-translate-x-full'

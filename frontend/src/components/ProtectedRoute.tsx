@@ -15,9 +15,11 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
 export function AdminRoute({ children, roles = ['OWNER', 'ADMIN'] }: { children: ReactNode; roles?: string[] }) {
   const { user, initialized } = useAuth();
+  const location = useLocation();
   if (!initialized) return null;
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const next = `${location.pathname}${location.search}${location.hash}`;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
   }
   if (!roles.includes(user.role)) {
     return (

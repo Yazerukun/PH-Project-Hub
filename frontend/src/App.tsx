@@ -23,7 +23,7 @@ import { NewSuggestionPage } from './pages/NewSuggestionPage';
 import { NewUpdatePage } from './pages/NewUpdatePage';
 import { AdminPage } from './pages/AdminPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute';
 import { Skeleton } from './components/ui/Skeleton';
 
 function ScrollToTop() {
@@ -86,8 +86,8 @@ function Bootstrapper() {
           <Route path="/suggestions/new" element={<ProtectedRoute><NewSuggestionPage /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-          <Route path="/admin/new-update" element={<ProtectedRoute><NewUpdatePage /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+          <Route path="/admin/new-update" element={<AdminRoute><NewUpdatePage /></AdminRoute>} />
           <Route path="/login" element={<AuthPage mode="login" />} />
           <Route path="/register" element={<AuthPage mode="register" />} />
           <Route path="*" element={<NotFoundPage />} />

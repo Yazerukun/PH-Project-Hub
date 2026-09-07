@@ -14,6 +14,7 @@ import {
   ChevronDownIcon,
   ProjectsIcon,
   GuidelinesIcon,
+  UsersIcon,
 } from '../ui/icons';
 import type { Icon } from './channelUi';
 import { formatChannelName, projectInitials, projectColor, channelLink, orderCommunity } from './channelUi';
@@ -232,6 +233,23 @@ export function Sidebar({ className = '' }: { className?: string }) {
                   </>
                 )}
               </NavLink>
+            )}
+            {user && (user.role === 'OWNER' || user.role === 'ADMIN') && (
+              <>
+                <hr className="my-1.5 border-t border-ink-600/50" />
+                <NavLink
+                  to="/admin"
+                  end={false}
+                  className={({ isActive }) => `${baseRow} ${isActive ? activeRow : hoverRow}`}
+                >
+                  {({ isActive }) => (
+                    <>
+                      <UsersIcon size={16} className={`shrink-0 ${isActive ? 'text-primary-300' : 'text-gray-400'}`} />
+                      <span>Admin</span>
+                    </>
+                  )}
+                </NavLink>
+              </>
             )}
           </div>
         </CollapseSection>
