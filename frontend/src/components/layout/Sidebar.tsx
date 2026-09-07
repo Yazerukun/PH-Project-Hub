@@ -61,9 +61,9 @@ function writeSections(state: SectionState) {
 const baseRow =
   'flex items-center gap-2.5 rounded-xl border-l-2 border-transparent px-2.5 py-2 text-sm transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900';
 const hoverRow =
-  'text-gray-300 hover:text-gray-200 hover:bg-ink-700/60 hover:translate-x-[3px]';
+  'text-gray-400 hover:text-gray-200 hover:bg-ink-700/60';
 const activeRow =
-  'bg-primary-600/12 text-primary-200 font-medium border-l-2 border-primary-500 shadow-[0_0_0_3px_rgba(139,92,246,0.12)]';
+  'bg-primary-600/10 text-primary-200 font-medium border-l-2 border-primary-500';
 
 function CollapseSection({
   title,

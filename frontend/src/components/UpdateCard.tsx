@@ -3,7 +3,7 @@ import type { ProjectUpdate } from '../types';
 import { Avatar } from './ui/Avatar';
 import { Badge } from './ui/Badge';
 import { OwnerBadge, OfficialBadge } from './ui/OwnerBadge';
-import { timeAgo } from '../lib/format';
+import { timeAgo, renderText } from '../lib/format';
 import { updateTypeLabel } from '../lib/updates';
 import { GithubIcon, LinkIcon, PinIcon, ChatIcon, HeartIcon, ThumbsUpIcon, FireIcon, PartyIcon } from './ui/icons';
 
@@ -30,7 +30,7 @@ const REACTION_EMOJIS = ['❤️', '👍', '🔥', '🎉'];
 function parseChangelog(raw: string): string[] {
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string').map(renderText) : [];
   } catch {
     return [];
   }
@@ -81,15 +81,15 @@ export function UpdateCard({ update, onReact }: { update: ProjectUpdate; onReact
       }`}
     >
       {/* Project header strip */}
-      <div className="flex items-center gap-2 border-b border-ink-600/60 bg-ink-900/50 px-4 py-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400">{update.project_name}</span>
-        <OfficialBadge />
+      <div className="flex items-center gap-2 border-b border-ink-600/60 bg-ink-900/40 px-4 py-2.5">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-primary-300">{update.project_name}</span>
+        {(update.author_role === 'OWNER' || update.author_role === 'ADMIN') && <OfficialBadge />}
         {update.author_role === 'OWNER' && <OwnerBadge role="OWNER" showIcon={false} />}
         <Badge tone={typeTone[update.update_type] ?? 'gray'}>
           {typeIcon[update.update_type]}
           {updateTypeLabel(update.update_type)}
         </Badge>
-        {update.version && <Badge tone="gray">v{update.version}</Badge>}
+        {update.version && <span className="text-meta text-gray-500">v{update.version}</span>}
         {update.pinned === 1 && (
           <Badge tone="gold" className="ml-auto">
             <PinIcon size={11} /> PINNED
@@ -98,7 +98,7 @@ export function UpdateCard({ update, onReact }: { update: ProjectUpdate; onReact
       </div>
 
       <div className="px-4 py-4 sm:px-5">
-        <h3 className="text-lg font-bold leading-snug text-white">
+        <h3 className="text-card-title text-white">
           <Link to={`/updates/${update.id}`} className="hover:text-primary-300">
             {update.title}
           </Link>
@@ -116,7 +116,7 @@ export function UpdateCard({ update, onReact }: { update: ProjectUpdate; onReact
         )}
 
         {update.body && !changelog.length && (
-          <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm text-gray-400">{update.body}</p>
+          <p className="mt-3 line-clamp-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-400">{renderText(update.body)}</p>
         )}
 
         {update.image && (

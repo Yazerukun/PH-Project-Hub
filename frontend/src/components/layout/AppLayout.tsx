@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import type { Channel } from '../../types';
 import { Header } from './Header';
@@ -19,11 +19,12 @@ import {
 } from '../ui/icons';
 import { orderCommunity, formatChannelName, projectInitials, projectColor } from './channelUi';
 
-export function AppLayout({ contextPanel }: { contextPanel?: ReactNode }) {
+export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { user } = useAuth();
   useSitePresence();
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -92,16 +93,14 @@ export function AppLayout({ contextPanel }: { contextPanel?: ReactNode }) {
         </div>
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-4xl px-3 py-4 sm:px-6 lg:py-6">
+          <div
+            className={`w-full px-3 py-4 sm:px-6 lg:py-6 ${
+              pathname === '/' ? 'max-w-[1440px]' : 'max-w-[920px]'
+            }`}
+          >
             <Outlet />
           </div>
         </main>
-
-        {contextPanel && (
-          <aside className="hidden w-72 shrink-0 overflow-y-auto border-l border-ink-600 bg-ink-900 p-4 xl:block">
-            {contextPanel}
-          </aside>
-        )}
       </div>
 
       {/* Mobile bottom nav */}

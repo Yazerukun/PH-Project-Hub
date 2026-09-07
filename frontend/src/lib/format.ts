@@ -37,3 +37,8 @@ export function parseTechStack(raw: string): string[] {
 export function initials(name: string): string {
   return name.trim().charAt(0).toUpperCase() || '?';
 }
+
+/** Renders stored content that contains escaped newlines (`\n`) as real line breaks. */
+export function renderText(text: string): string {
+  return text.replace(/\\n/g, '\n').replace(/\\r/g, '');
+}

@@ -74,13 +74,7 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
         <MenuIcon />
       </button>
 
-      <div className="hidden items-center gap-2 lg:flex">
-        <Link to="/" className="text-sm font-bold tracking-tight text-white">
-          PH <span className="text-primary-400">PROJECT HUB</span>
-        </Link>
-      </div>
-
-      <form onSubmit={submitSearch} className="relative mx-auto w-full max-w-md lg:ml-6 lg:mr-auto">
+      <form onSubmit={submitSearch} className="relative mx-auto w-full max-w-md lg:ml-5 lg:mr-auto">
         <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
         <input
           value={query}

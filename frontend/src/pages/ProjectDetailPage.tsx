@@ -156,69 +156,76 @@ export function ProjectDetailPage({ initialTab = 'overview' }: ProjectPageProps)
 
   return (
     <div className="space-y-5">
-      {/* Banner */}
-      <section className="relative overflow-hidden rounded-2xl border border-ink-600 bg-gradient-to-br from-ink-800 via-ink-800 to-primary-900/20 p-6">
-        <div className="flex flex-wrap items-start gap-4">
-          <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary-600/20 text-2xl font-bold text-primary-300">
-            {project.name.slice(0, 2).toUpperCase()}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-white">{project.name}</h1>
-              <StatusBadge status={project.status} />
-              {project.version && <Badge tone="gray">v{project.version}</Badge>}
-            </div>
-            <p className="mt-1 text-xs text-gray-500">{project.category}</p>
-            <p className="mt-2 line-clamp-3 text-sm text-gray-400">{project.description}</p>
-
-            {techStack.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {techStack.map((tech) => (
-                  <span key={tech} className="rounded border border-ink-500 bg-ink-700/50 px-1.5 py-0.5 text-[10px] text-gray-400">
-                    {tech}
-                  </span>
-                ))}
+      {/* Identity header */}
+      <section className="overflow-hidden rounded-2xl border border-ink-600 bg-ink-800/50">
+        {project.cover && (
+          <img src={project.cover} alt="" className="h-32 w-full object-cover" loading="lazy" />
+        )}
+        <div className="p-6">
+          <div className="flex flex-wrap items-start gap-4">
+            {!project.cover && (
+              <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-primary-600/15 text-2xl font-bold text-primary-300">
+                {project.name.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-page-title text-white">{project.name}</h1>
+                <StatusBadge status={project.status} />
+                {project.version && <span className="text-meta text-gray-500">v{project.version}</span>}
               </div>
-            )}
-          </div>
+              <p className="mt-1 text-xs text-gray-500">{project.category}</p>
+              <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-gray-400">{project.description}</p>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {project.live_url && (
-              <a href={project.live_url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary-600 px-4 text-xs font-semibold text-white hover:bg-primary-500">
-                <LinkIcon size={13} /> Visit Website
-              </a>
-            )}
-            {project.github_url && (
-              <a href={project.github_url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-500 bg-ink-800 px-4 text-xs font-medium text-gray-300 hover:bg-ink-600">
-                <GithubIcon size={13} /> GitHub
-              </a>
-            )}
-            <Link
-              to={`/chat/${channelSlug}`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-accent-500/40 bg-accent-500/10 px-4 text-xs font-semibold text-accent-300 hover:bg-accent-500/20"
-            >
-              <ChatIcon size={13} /> Join Project Chat
-            </Link>
-            {user ? (
-              <button
-                onClick={() => void toggleFollow()}
-                className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-4 text-xs font-medium transition-colors ${
-                  following
-                    ? 'border-primary-600/40 bg-primary-600/10 text-primary-300 hover:bg-primary-600/20'
-                    : 'border-ink-500 bg-ink-800 text-gray-300 hover:bg-ink-600'
-                }`}
+              {techStack.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {techStack.map((tech) => (
+                    <span key={tech} className="rounded border border-ink-500 bg-ink-700/50 px-1.5 py-0.5 text-[10px] text-gray-400">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {project.live_url && (
+                <a href={project.live_url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary-600 px-4 text-xs font-semibold text-white hover:bg-primary-500">
+                  <LinkIcon size={13} /> Visit Website
+                </a>
+              )}
+              {project.github_url && (
+                <a href={project.github_url} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-ink-500 bg-ink-800 px-4 text-xs font-medium text-gray-300 hover:bg-ink-600">
+                  <GithubIcon size={13} /> GitHub
+                </a>
+              )}
+              <Link
+                to={`/chat/${channelSlug}`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-accent-500/40 bg-accent-500/10 px-4 text-xs font-semibold text-accent-300 hover:bg-accent-500/20"
               >
-                <BookmarkIcon size={13} /> {following ? 'Following' : 'Follow'}
-              </button>
-            ) : null}
+                <ChatIcon size={13} /> Join Project Chat
+              </Link>
+              {user ? (
+                <button
+                  onClick={() => void toggleFollow()}
+                  className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-4 text-xs font-medium transition-colors ${
+                    following
+                      ? 'border-primary-600/40 bg-primary-600/10 text-primary-300 hover:bg-primary-600/20'
+                      : 'border-ink-500 bg-ink-800 text-gray-300 hover:bg-ink-600'
+                  }`}
+                >
+                  <BookmarkIcon size={13} /> {following ? 'Following' : 'Follow'}
+                </button>
+              ) : null}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-4 flex items-center gap-4 border-t border-ink-600/50 pt-3 text-xs text-gray-500">
-          <span className="inline-flex items-center gap-1"><UsersIcon size={13} /> {project.follower_count ?? 0} followers</span>
-          <span className="inline-flex items-center gap-1"><ArrowUpIcon size={13} /> {project.update_count ?? 0} updates</span>
-          <span className="inline-flex items-center gap-1"><BugIcon size={13} /> {project.bug_count ?? 0} bugs</span>
-          <span className="ml-auto">Last update {project.updated_at ? timeAgo(project.updated_at) : '—'}</span>
+          <div className="mt-5 flex items-center gap-4 border-t border-ink-600/50 pt-3 text-xs text-gray-500">
+            <span className="inline-flex items-center gap-1"><UsersIcon size={13} /> {project.follower_count ?? 0} followers</span>
+            <span className="inline-flex items-center gap-1"><ArrowUpIcon size={13} /> {project.update_count ?? 0} updates</span>
+            <span className="inline-flex items-center gap-1"><BugIcon size={13} /> {project.bug_count ?? 0} bugs</span>
+            <span className="ml-auto">Last update {project.updated_at ? timeAgo(project.updated_at) : '—'}</span>
+          </div>
         </div>
       </section>
 

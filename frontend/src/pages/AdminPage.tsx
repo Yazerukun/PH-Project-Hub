@@ -136,7 +136,7 @@ export function AdminPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold text-white">
+          <h1 className="flex items-center gap-2 text-page-title text-white">
             Admin
             {live && (
               <span className="flex items-center gap-1.5 rounded-full border border-live/30 bg-live/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-live">

@@ -124,7 +124,7 @@ export function ChatPage() {
   return (
     <div className="flex h-[calc(100vh-7rem)] flex-col overflow-hidden rounded-xl border border-ink-600 bg-ink-800/40 lg:h-[calc(100vh-8.5rem)]">
       {/* Channel header */}
-      <div className="border-b border-ink-600 bg-ink-900/50 px-4 py-2.5">
+      <div className="border-b border-ink-600 bg-ink-800/70 px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-primary-400">#</span>
           <span className="text-sm font-bold text-white">{channel.name}</span>
@@ -138,7 +138,7 @@ export function ChatPage() {
           </div>
         </div>
         {/* Quick channel switch (mobile) */}
-        <div className="scrollbar-none -mx-1 mt-2 flex gap-1.5 overflow-x-auto pb-0.5 lg:hidden">
+        <div className="scrollbar-none -mx-1 mt-2.5 flex gap-1.5 overflow-x-auto pb-0.5 lg:hidden">
           {channels.map((c) => (
             <button
               key={c.slug}

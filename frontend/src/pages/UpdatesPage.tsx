@@ -55,8 +55,8 @@ export function UpdatesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Project Updates</h1>
-          <p className="text-sm text-gray-500">Official changelogs and announcements from every project.</p>
+          <h1 className="text-page-title text-white">Project Updates</h1>
+          <p className="mt-1 text-sm text-gray-500">Official changelogs and announcements from every project.</p>
         </div>
       </div>
 

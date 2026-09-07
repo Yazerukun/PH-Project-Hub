@@ -57,7 +57,7 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   return (
     <div className="mx-auto flex max-w-md flex-col justify-center py-10">
       <div className="rounded-2xl border border-ink-600 bg-ink-800/60 p-6 sm:p-8">
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-page-title text-white">
           {isRegister ? 'Create your account' : 'Welcome back'}
         </h1>
         <p className="mt-1 text-sm text-gray-500">

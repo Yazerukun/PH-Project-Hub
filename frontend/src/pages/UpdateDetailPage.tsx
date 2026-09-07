@@ -9,9 +9,18 @@ import { OwnerBadge, OfficialBadge } from '../components/ui/OwnerBadge';
 import { Banner, ErrorState } from '../components/ui/Feedback';
 import { ReactionBar } from '../components/UpdateCard';
 import { Skeleton } from '../components/ui/Skeleton';
-import { timeAgo } from '../lib/format';
+import { timeAgo, renderText } from '../lib/format';
 import { updateTypeLabel } from '../lib/updates';
 import { BackIcon, GithubIcon, LinkIcon, ReplyIcon, SendIcon, ChatIcon } from '../components/ui/icons';
+
+const typeTone: Record<string, 'primary' | 'accent' | 'live' | 'warn' | 'danger' | 'gray'> = {
+  ANNOUNCEMENT: 'primary',
+  RELEASE: 'live',
+  FEATURE: 'accent',
+  IMPROVEMENT: 'accent',
+  FIX: 'warn',
+  MAINTENANCE: 'gray',
+};
 
 export function UpdateDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -105,7 +114,7 @@ export function UpdateDetailPage() {
               </Link>
               <OfficialBadge />
               {update.author_role === 'OWNER' && <OwnerBadge role="OWNER" showIcon={false} />}
-              <Badge tone="live">{updateTypeLabel(update.update_type)}</Badge>
+              <Badge tone={typeTone[update.update_type] ?? 'gray'}>{updateTypeLabel(update.update_type)}</Badge>
               {update.version && <Badge tone="gray">v{update.version}</Badge>}
               {update.pinned === 1 && <Badge tone="gold">PINNED</Badge>}
               <span className="ml-auto flex items-center gap-2 text-xs text-gray-500">
@@ -130,7 +139,7 @@ export function UpdateDetailPage() {
                         {changelog.map((item, i) => (
                           <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
                             <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary-400" />
-                            <span>{item}</span>
+                            <span>{renderText(item)}</span>
                           </li>
                         ))}
                       </ul>
@@ -139,7 +148,7 @@ export function UpdateDetailPage() {
                 } catch {
                   // not an array
                 }
-                return update.body && <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{update.body}</p>;
+                return update.body && <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{renderText(update.body)}</p>;
               })()}
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -238,7 +247,7 @@ export function UpdateDetailPage() {
                     <RoleBadge role={c.role} />
                     <span className="ml-auto text-xs text-gray-500">{timeAgo(c.created_at)}</span>
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-gray-300">{c.body}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-gray-300">{renderText(c.body)}</p>
                   {user && (
                     <button
                       onClick={() => setReplyTo(c.id)}
