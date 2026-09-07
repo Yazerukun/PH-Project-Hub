@@ -190,3 +190,20 @@ export const LockIcon = (p: IconProps) => (
 export const FlagPHIcon = (p: IconProps) => (
   <Svg {...p}><rect x="3" y="4" width="18" height="16" rx="2" fill="#0038A8" stroke="currentColor" strokeWidth="1" /><rect x="3" y="4" width="18" height="8" fill="#CE1126" stroke="currentColor" strokeWidth="1" /><circle cx="9" cy="8" r="2.2" fill="#FCD116" stroke="none" /></Svg>
 );
+
+export const ProjectsIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 3h7v7H3z" />
+    <path d="M14 3h7v7h-7z" />
+    <path d="M3 14h7v7H3z" />
+    <path d="M14 14h7v7h-7z" />
+  </Svg>
+);
+
+export const GuidelinesIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 4h10v16H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+    <path d="M20 20V8a2 2 0 0 0-2-2h-2v14h2a2 2 0 0 1 2 2z" />
+    <path d="M9 8h6M9 12h6M9 16h2" />
+  </Svg>
+);
