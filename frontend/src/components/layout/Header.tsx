@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../stores/auth';
 import { api } from '../../lib/api';
 import type { Notification } from '../../types';
@@ -11,6 +11,7 @@ import { timeAgo } from '../../lib/format';
 export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread, setUnread] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
@@ -18,6 +19,10 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   const notifRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    if (location.pathname === '/search') setQuery(new URLSearchParams(location.search).get('q') ?? '');
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!user) return;
@@ -63,6 +68,14 @@ export function Header({ onOpenDrawer }: { onOpenDrawer: () => void }) {
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
+
+  useEffect(() => {
+    if (location.pathname !== '/search' || !query.trim()) return;
+    const timer = window.setTimeout(() => {
+      navigate(`/search?q=${encodeURIComponent(query.trim())}`, { replace: true });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [query, location.pathname, navigate]);
 
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-ink-600 bg-ink-900/90 px-3 backdrop-blur sm:px-4">
