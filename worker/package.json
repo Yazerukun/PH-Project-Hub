@@ -8,8 +8,8 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:migrate:local": "wrangler d1 migrations apply phhub --local",
-    "db:migrate:remote": "wrangler d1 migrations apply phhub --remote"
+    "db:migrate:local": "wrangler d1 migrations apply ph-project-hub-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply ph-project-hub-db --remote"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260905.1",
