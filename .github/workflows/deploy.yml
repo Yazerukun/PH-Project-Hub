@@ -1,9 +1,13 @@
 name: Deploy Production
-
+# NOTE: auto-deploy on push is DISABLED (2026-09-24). The CI token is
+# IP-locked to Ian's home connection, so GitHub-runner deploys fail auth.
+# Production is deployed manually via local wrangler (see README).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Manual deploy (requires non-IP-locked token or local run)'
+        default: 'true'
 
 concurrency:
   group: ph-project-hub-production
