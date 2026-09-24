@@ -7,7 +7,7 @@ Build · Update · Discuss · Grow
 **Live site:** https://ph-project-hub.pages.dev/
 **API:** https://ph-project-hub-api.yomikaze-md.workers.dev
 
-**Status:** automatically validated, built, and deployed to production on every push to `main` by GitHub Actions (badge above tracks the latest run).
+**Status:** live on Pages + Worker. Production is deployed manually from an authorized machine via local wrangler (auto-deploy on push is disabled — the CI token is IP-locked to the owner's home connection). See [Cloudflare deployment](#cloudflare-deployment).
 
 PH PROJECT HUB is the official community home for the Philippine open-source project lineup. It publishes official build updates and project status, rolls out program announcements and priorities, and runs a real-time, moderated community chat organized around project channels.
 
@@ -122,7 +122,20 @@ npm run migrate:local
 
 ## Cloudflare deployment
 
-The production architecture is **Pages (`ph-project-hub`, frontend) + Worker (`ph-project-hub-api`) + D1 (`ph-project-hub-db`) + Durable Objects (`CHAT_ROOM`, `PRESENCE`)**. Deployment is fully automatic through GitHub Actions; the existing production resources are preserved.
+The production architecture is **Pages (`ph-project-hub`, frontend) + Worker (`ph-project-hub-api`) + D1 (`ph-project-hub-db`) + Durable Objects (`CHAT_ROOM`, `PRESENCE`)**. The existing production resources are preserved.
+
+### Manual deployment (current)
+
+Auto-deploy on push is disabled. Deploy from an authorized machine with a working Cloudflare session (`wrangler login`):
+
+```
+cd worker
+npx wrangler deploy --var OWNER_EMAILS:<email> --var ADMIN_EMAILS:<email>   # worker
+npx wrangler pages deploy ../frontend/dist --project-name ph-project-hub --branch main   # frontend
+npm run migrate:remote   # apply D1 migrations (npx wrangler d1 migrations apply ph-project-hub-db --remote)
+```
+
+The repo secret `CLOUDFLARE_API_TOKEN` is IP-locked to the owner's home connection and cannot authenticate GitHub-runner deploys — hence manual deploys.
 
 ### Pipeline
 
@@ -136,7 +149,7 @@ git push main
    → production smoke test (pages.dev, API, SPA routes, JS/CSS assets)
 ```
 
-Any critical validation failure stops the job before either deployment runs, and the run goes visibly red. Runs are serialized with `concurrency: ph-project-hub-production` so two `main` pushes never deploy at the same time.
+Any critical validation failure stops the job before either deployment runs. Runs were serialized with `concurrency: ph-project-hub-production`; the workflow is now retained for reference only.
 
 ### Cloudflare Pages (frontend)
 
