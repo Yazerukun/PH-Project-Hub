@@ -63,95 +63,100 @@ export class ChatRoom {
   }
 
   async fetch(request: Request): Promise<Response> {
-    await this.storageReady;
-    if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
-      return new Response('ChatRoom: WebSocket upgrade required', { status: 400 });
-    }
+    try {
+      await this.storageReady;
+      if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket') {
+        return new Response('ChatRoom: WebSocket upgrade required', { status: 400 });
+      }
 
-    const url = new URL(request.url);
-    const token = url.searchParams.get('token') ?? '';
-    const pathMatch = url.pathname.match(/^\/api\/chat\/([^/]+)\/ws$/);
-    const channelId = pathMatch ? Number(pathMatch[1]) : NaN;
-    if (!channelId) {
-      return new Response('ChatRoom: missing channel', { status: 400 });
-    }
+      const url = new URL(request.url);
+      const token = url.searchParams.get('token') ?? '';
+      const pathMatch = url.pathname.match(/^\/api\/chat\/([^/]+)\/ws$/);
+      const channelId = pathMatch ? Number(pathMatch[1]) : NaN;
+      if (!channelId) {
+        return new Response('ChatRoom: missing channel', { status: 400 });
+      }
 
-    const userId = await verifySessionToken(token, this.env);
-    if (userId === null) {
-      return new Response('ChatRoom: invalid session', { status: 401 });
-    }
+      const userId = await verifySessionToken(token, this.env);
+      if (userId === null) {
+        return new Response('ChatRoom: invalid session', { status: 401 });
+      }
 
-    // Revoked sessions (logout) must not open sockets: the session must still
-    // exist and be unexpired, mirroring REST auth.
-    const session = await this.env.DB.prepare('SELECT id FROM sessions WHERE token = ? AND expires_at > ?')
-      .bind(token, this.now()).first();
-    if (!session) {
-      return new Response('ChatRoom: session revoked', { status: 401 });
-    }
+      // Revoked sessions (logout) must not open sockets: the session must still
+      // exist and be unexpired, mirroring REST auth.
+      const session = await this.env.DB.prepare('SELECT id FROM sessions WHERE token = ? AND expires_at > ?')
+        .bind(token, this.now()).first();
+      if (!session) {
+        return new Response('ChatRoom: session revoked', { status: 401 });
+      }
 
-    const userRow = await this.env.DB.prepare('SELECT id, username, display_name, avatar, role FROM users WHERE id = ?')
-      .bind(userId).first<{ id: number; username: string; display_name: string; avatar: string | null; role: AuthUser['role'] }>();
-    if (!userRow || userRow.role === undefined) {
-      return new Response('ChatRoom: user not found', { status: 401 });
-    }
+      const userRow = await this.env.DB.prepare('SELECT id, username, display_name, avatar, role FROM users WHERE id = ?')
+        .bind(userId).first<{ id: number; username: string; display_name: string; avatar: string | null; role: AuthUser['role'] }>();
+      if (!userRow || userRow.role === undefined) {
+        return new Response('ChatRoom: user not found', { status: 401 });
+      }
 
-    const banned = await this.env.DB.prepare('SELECT is_banned FROM users WHERE id = ?')
-      .bind(userId).first<{ is_banned: number }>();
-    if (banned?.is_banned === 1) {
-      return new Response('ChatRoom: user banned', { status: 403 });
-    }
+      const banned = await this.env.DB.prepare('SELECT is_banned FROM users WHERE id = ?')
+        .bind(userId).first<{ is_banned: number }>();
+      if (banned?.is_banned === 1) {
+        return new Response('ChatRoom: user banned', { status: 403 });
+      }
 
-    const channel = await this.env.DB.prepare('SELECT id, is_locked FROM channels WHERE id = ?')
-      .bind(channelId).first<{ id: number; is_locked: number }>();
-    if (!channel) {
-      return new Response('ChatRoom: channel not found', { status: 404 });
-    }
+      const channel = await this.env.DB.prepare('SELECT id, is_locked FROM channels WHERE id = ?')
+        .bind(channelId).first<{ id: number; is_locked: number }>();
+      if (!channel) {
+        return new Response('ChatRoom: channel not found', { status: 404 });
+      }
 
-    if (this.channelId === 0) {
-      this.channelId = channelId;
-      await this.state.storage.put('meta', { channelId });
-    }
+      if (this.channelId === 0) {
+        this.channelId = channelId;
+        await this.state.storage.put('meta', { channelId });
+      }
 
-    const { 0: client, 1: server } = new WebSocketPair();
-    server.accept();
-    this.clients.set(server, {
-      ws: server,
-      user: {
-        id: userRow.id,
-        username: userRow.username,
-        display_name: userRow.display_name,
-        avatar: userRow.avatar,
-        role: userRow.role ?? 'MEMBER',
-      },
-      status: 'ONLINE',
-      joinedAt: this.now(),
-    });
+      const { 0: client, 1: server } = new WebSocketPair();
+      server.accept();
+      this.clients.set(server, {
+        ws: server,
+        user: {
+          id: userRow.id,
+          username: userRow.username,
+          display_name: userRow.display_name,
+          avatar: userRow.avatar,
+          role: userRow.role ?? 'MEMBER',
+        },
+        status: 'ONLINE',
+        joinedAt: this.now(),
+      });
 
-    server.addEventListener('message', (event) => {
-      const data = (event as MessageEvent).data as string | ArrayBuffer;
-      const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
-      this.handleClientMessage(server, text);
-    });
+      server.addEventListener('message', (event) => {
+        const data = (event as MessageEvent).data as string | ArrayBuffer;
+        const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+        this.handleClientMessage(server, text);
+      });
 
-    server.addEventListener('close', () => {
-      const leaving = this.clients.get(server);
-      this.clients.delete(server);
-      if (leaving) this.reportPresence('leave', leaving.user);
+      server.addEventListener('close', () => {
+        const leaving = this.clients.get(server);
+        this.clients.delete(server);
+        if (leaving) this.reportPresence('leave', leaving.user);
+        this.broadcastPresence();
+      });
+
+      server.addEventListener('error', () => {
+        const leaving = this.clients.get(server);
+        this.clients.delete(server);
+        if (leaving) this.reportPresence('leave', leaving.user);
+        this.broadcastPresence();
+      });
+
+      this.reportPresence('join', { id: userRow.id, username: userRow.username, display_name: userRow.display_name });
       this.broadcastPresence();
-    });
+      this.sendHistory(server);
 
-    server.addEventListener('error', () => {
-      const leaving = this.clients.get(server);
-      this.clients.delete(server);
-      if (leaving) this.reportPresence('leave', leaving.user);
-      this.broadcastPresence();
-    });
-
-    this.reportPresence('join', { id: userRow.id, username: userRow.username, display_name: userRow.display_name });
-    this.broadcastPresence();
-    this.sendHistory(server);
-
-    return new Response(null, { status: 101, webSocket: client });
+      return new Response(null, { status: 101, webSocket: client });
+    } catch (err) {
+      console.error('ChatRoom fetch error:', err);
+      return new Response('ChatRoom: internal error', { status: 500 });
+    }
   }
 
   private clientState(ws: WebSocket): ClientState | null {

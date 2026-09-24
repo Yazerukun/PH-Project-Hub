@@ -181,7 +181,8 @@ export default {
         const id = env.CHAT_ROOM.idFromName(roomId);
         const stub = env.CHAT_ROOM.get(id);
         const upstream = new Request(request.url, request);
-        return stub.fetch(upstream);
+        const response = await stub.fetch(upstream);
+        return response;
       }
 
       const method = request.method;
